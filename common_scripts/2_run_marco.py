@@ -46,7 +46,6 @@ logger = logging.getLogger(__name__)
 
 
 def main():
-    print("\n\nAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa")
     parser = HfArgumentParser((ModelArguments, DataArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
     model_args: ModelArguments
@@ -66,16 +65,11 @@ def main():
     # print()
 
     # Set seed
-    print("\n==============================================")
     set_seed(training_args.seed)
     # set_seed(seed)
-    # print(training_args.seed)
 
-
-    # 1? Não seria 2?
     num_labels = 1
 
-    print("\n=========== CONFIGURANDO AS COISAS ===========")
     config = AutoConfig.from_pretrained(
         model_args.config_name if model_args.config_name else model_args.model_name_or_path,  # bert-base-uncased
         num_labels=num_labels,
@@ -89,8 +83,6 @@ def main():
 
     _model_class = RerankerDC if training_args.distance_cache else Reranker
 
-    print("\n===============================")
-    print(model_args.model_name_or_path)
     model = _model_class.from_pretrained(
         model_args, data_args, training_args,
         model_args.model_name_or_path,
@@ -99,11 +91,8 @@ def main():
         cache_dir=model_args.cache_dir,
     )
 
-    # data_args.train_path é uma lista com o nome de todos os arquivos TSV ou JSON
-    # dentro do train_dir.
 
     # Get datasets #true
-    print("\n===========  GETTING DATASET ===========")
     if training_args.do_train:
         train_dataset = GroupedTrainDataset(
             args=data_args,
@@ -114,7 +103,6 @@ def main():
         train_dataset = None
 
     # Initialize our Trainer
-    print("\n===========  INITIALIZING TRAINER ===========")
     _trainer_class = RerankerDCTrainer if training_args.distance_cache else RerankerTrainer
     trainer = _trainer_class(
         model=model,
@@ -123,7 +111,6 @@ def main():
         data_collator=GroupCollator(tokenizer),
     )
 
-    # ate aqui foi OK
 
     # Training
 
@@ -186,7 +173,6 @@ def main():
             with open(data_args.rank_score_path, "w") as writer:
                 for qid, pid, score in zip(pred_qids, pred_pids, pred_scores):
                     writer.write(f'{qid}\t{pid}\t{score}\n')
-    print("\n===========  TERMINOU ===========")
 
 
 def setup_logging(data_args, model_args, training_args):
